@@ -36,10 +36,16 @@ namespace Ratchet.Runtime.Debugger
         /// <summary>
         /// Represent a module loaded by the debuggee
         /// </summary>
-        public unsafe class Module
+        public unsafe partial class Module
         {
             [System.Runtime.InteropServices.DllImport("Kernel32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
             static extern uint GetFinalPathNameByHandle(void* hFile, [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPTStr)] System.Text.StringBuilder lpszFilePath, uint cchFilePath, uint dwFlags);
+
+            [System.Runtime.InteropServices.DllImport("Kernel32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+            static extern uint GetFileSize(void* hFile, out uint lpFileSizeHigh);
+
+            internal List<Section> _Sections = new List<Section>();
+            public IReadOnlyCollection<Section> Sections { get { return _Sections.AsReadOnly(); } }
 
             IntPtr _Handle = new IntPtr(0);
             public IntPtr Handle { get { return _Handle; } }
@@ -71,10 +77,42 @@ namespace Ratchet.Runtime.Debugger
             IntPtr _BaseAddress = new IntPtr(0);
             public IntPtr BaseAddress { get { return _BaseAddress; } }
 
+            internal Session _Parent = null;
+
+            public int ReadMemory(IntPtr Address, byte[] Buffer, int Length)
+            {
+                return _Parent.ReadMemory(new IntPtr(_BaseAddress.ToInt64() + Address.ToInt64()), Buffer, Length);
+            }
+
+            public int WriteMemory(IntPtr Address, byte[] Buffer)
+            {
+                return WriteMemory(Address, Buffer, Buffer.Length);
+            }
+
+            public int WriteMemory(IntPtr Address, byte[] Buffer, int Length)
+            {
+                return _Parent.WriteMemory(new IntPtr(_BaseAddress.ToInt64() + Address.ToInt64()), Buffer, Length);
+            }
+
             internal Module(Session Session, IntPtr Handle, IntPtr BaseAddress)
             {
                 _Handle = Handle;
                 _BaseAddress = BaseAddress;
+                _Parent = Session;
+                _ReadImage();
+            }
+
+            void _ReadImage()
+            {
+                byte[] Magick = new byte[2];
+                if (Magick.Length == ReadMemory(new IntPtr(0), Magick, 2))
+                {
+                    if (Magick[0] == 0x4D && Magick[1] == 0x5A)
+                    {
+                        // This looks like a PE jump on the PE reader
+                        try { PEReader.ParsePE(this); } catch { }
+                    }
+                }
             }
 
             public override string ToString()
