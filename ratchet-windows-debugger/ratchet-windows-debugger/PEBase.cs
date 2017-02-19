@@ -260,16 +260,24 @@ namespace Ratchet.Runtime.Debugger
                     IntPtr addressOfFunctions = FindAddressFromRVA(module, exportTableData->AddressOfFunctions);
                     IntPtr addressOfNames = FindAddressFromRVA(module, exportTableData->AddressOfNames);
 
-                    byte[] namePointers = new byte[4 * exportTableData->NumberOfName];
-                    module.ReadMemory(addressOfNames, namePointers, namePointers.Length);
-                    byte[] functionsPointers = new byte[4 * exportTableData->NumberOfFunction];
-                    module.ReadMemory(addressOfFunctions, functionsPointers, functionsPointers.Length);
-
 
                     if (exportTableData->NumberOfName > exportTableData->NumberOfFunction)
                     {
                         exportTableData->NumberOfName = exportTableData->NumberOfFunction;
                     }
+
+                    if (exportTableData->NumberOfFunction > exportTableData->NumberOfName)
+                    {
+                        addressOfFunctions = new IntPtr(addressOfFunctions.ToInt64() + (exportTableData->NumberOfFunction - exportTableData->NumberOfName) * 4);
+                        exportTableData->NumberOfFunction = exportTableData->NumberOfName;
+                    }
+
+
+                    byte[] namePointers = new byte[4 * exportTableData->NumberOfName];
+                    module.ReadMemory(addressOfNames, namePointers, namePointers.Length);
+                    byte[] functionsPointers = new byte[4 * exportTableData->NumberOfFunction];
+                    module.ReadMemory(addressOfFunctions, functionsPointers, functionsPointers.Length);
+
 
                     for (int n = 0; n < exportTableData->NumberOfName; n++)
                     {
@@ -278,8 +286,9 @@ namespace Ratchet.Runtime.Debugger
                         IntPtr namePointer = FindAddressFromRVA(module, BitConverter.ToUInt32(namePointers, n * 4));
                         IntPtr functionPointer = FindAddressInSectionFromRVA(module, BitConverter.ToUInt32(functionsPointers, n * 4), out parent);
                         string name = ReadASCIIString(module, namePointer);
-                        symbol._BaseAddress = new IntPtr(functionPointer.ToInt64() + parent.BaseAddress.ToInt64());
+                        symbol._BaseAddress = new IntPtr(functionPointer.ToInt64() +  parent.BaseAddress.ToInt64());
                         symbol._Name = name;
+                        symbol._Parent = module._Parent;
                         parent._Symbols.Add(symbol);
                         parent._Parent = module._Parent;
                     }

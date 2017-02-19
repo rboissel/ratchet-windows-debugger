@@ -213,6 +213,22 @@ namespace Ratchet.Runtime.Debugger
                 return new IntPtr(VirtualAllocEx(_hProcess, Address.ToPointer(), new IntPtr(Size), MEM_COMMIT | MEM_RESERVE, toNtProtection(Protection)));
             }
 
+            Dictionary<ulong, Breakpoint> _Breakpoint = new Dictionary<ulong, Breakpoint>();
+            public Breakpoint AddBreakpoint(IntPtr Address)
+            {
+                return AddBreakpoint((ulong)Address.ToInt64());
+            }
+            public Breakpoint AddBreakpoint(ulong address)
+            {
+                Breakpoint breakpoint = new Breakpoint(this, new IntPtr((long)address), new byte[] { 0xCC });
+                lock (this)
+                {
+                    if (_Breakpoint.ContainsKey(address)) { throw new Exception("Breakpoint already defined"); }
+                    _Breakpoint.Add(address, breakpoint);
+                }
+                return breakpoint;
+            }
+
             internal struct NTUnionDebugEventInfo
             {
                 void* _1;
@@ -515,6 +531,14 @@ namespace Ratchet.Runtime.Debugger
 
                     if ((uint)info.ExceptionRecord.ExceptionCode == 0x80000003)
                     {
+                        lock (this)
+                        {
+                            if (_Breakpoint.ContainsKey((ulong)info.ExceptionRecord.ExceptionAddress))
+                            {
+                                _Breakpoint[(ulong)info.ExceptionRecord.ExceptionAddress].hit(this, new BreakpointEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId), new IntPtr(info.ExceptionRecord.ExceptionAddress)));
+                                return;
+                            }
+                        }
                         while (OnBreakpoint == null) { System.Threading.Thread.Sleep(0); }
                         OnBreakpoint(this, new BreakpointEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId), new IntPtr(info.ExceptionRecord.ExceptionAddress)));
                     }

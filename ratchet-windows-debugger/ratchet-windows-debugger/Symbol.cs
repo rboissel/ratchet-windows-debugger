@@ -57,6 +57,11 @@ namespace Ratchet.Runtime.Debugger
                     return _Parent.WriteMemory(new IntPtr(_BaseAddress.ToInt64() + Address.ToInt64()), Buffer, Length);
                 }
 
+                public Breakpoint AddBreakpoint(IntPtr Address)
+                {
+                    return _Parent.AddBreakpoint((ulong)Address.ToInt64() + (ulong)_BaseAddress.ToInt64());
+                }
+
                 public override string ToString()
                 {
                     return "symbol: " + _Name;

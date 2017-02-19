@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AD7A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventLogger", "Samples\EventLogger\EventLogger.csproj", "{EFF4857F-B088-496E-B933-334713A78A63}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ftrace", "Ftrace\Ftrace.csproj", "{3EA871B8-A2E2-44B2-829C-74911FA74BDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +25,16 @@ Global
 		{EFF4857F-B088-496E-B933-334713A78A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFF4857F-B088-496E-B933-334713A78A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFF4857F-B088-496E-B933-334713A78A63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EFF4857F-B088-496E-B933-334713A78A63} = {AD7A8DF7-10F3-4D49-854F-CEA5D317F24C}
+		{3EA871B8-A2E2-44B2-829C-74911FA74BDE} = {AD7A8DF7-10F3-4D49-854F-CEA5D317F24C}
 	EndGlobalSection
 EndGlobal
