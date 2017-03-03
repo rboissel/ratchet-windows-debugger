@@ -9,7 +9,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AD7A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventLogger", "Samples\EventLogger\EventLogger.csproj", "{EFF4857F-B088-496E-B933-334713A78A63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ftrace", "Ftrace\Ftrace.csproj", "{3EA871B8-A2E2-44B2-829C-74911FA74BDE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{419CAD08-026A-48F7-A16A-BDAD73CDFBDA}"
+	ProjectSection(SolutionItems) = preProject
+		Builds\Ratchet.Runtime.Debugger.Windows.nuspec = Builds\Ratchet.Runtime.Debugger.Windows.nuspec
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTrace", "Samples\FTrace\FTrace.csproj", "{DDD9B0BF-FA50-428C-B258-E9B9A735C2A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ratchet-windows-debugger-net40", "Build\ratchet-windows-debugger-net40\ratchet-windows-debugger-net40.csproj", "{83A1ABE9-30B5-40EB-98A0-B9AC77D5B566}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ratchet-windows-debugger-net45", "Build\ratchet-windows-debugger-net45\ratchet-windows-debugger-net45.csproj", "{B3A8B938-4CDF-4129-8F4F-6BCFEE0E5660}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,16 +34,26 @@ Global
 		{EFF4857F-B088-496E-B933-334713A78A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFF4857F-B088-496E-B933-334713A78A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFF4857F-B088-496E-B933-334713A78A63}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3EA871B8-A2E2-44B2-829C-74911FA74BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDD9B0BF-FA50-428C-B258-E9B9A735C2A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDD9B0BF-FA50-428C-B258-E9B9A735C2A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDD9B0BF-FA50-428C-B258-E9B9A735C2A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDD9B0BF-FA50-428C-B258-E9B9A735C2A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83A1ABE9-30B5-40EB-98A0-B9AC77D5B566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83A1ABE9-30B5-40EB-98A0-B9AC77D5B566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83A1ABE9-30B5-40EB-98A0-B9AC77D5B566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83A1ABE9-30B5-40EB-98A0-B9AC77D5B566}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3A8B938-4CDF-4129-8F4F-6BCFEE0E5660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3A8B938-4CDF-4129-8F4F-6BCFEE0E5660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3A8B938-4CDF-4129-8F4F-6BCFEE0E5660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3A8B938-4CDF-4129-8F4F-6BCFEE0E5660}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EFF4857F-B088-496E-B933-334713A78A63} = {AD7A8DF7-10F3-4D49-854F-CEA5D317F24C}
-		{3EA871B8-A2E2-44B2-829C-74911FA74BDE} = {AD7A8DF7-10F3-4D49-854F-CEA5D317F24C}
+		{DDD9B0BF-FA50-428C-B258-E9B9A735C2A0} = {AD7A8DF7-10F3-4D49-854F-CEA5D317F24C}
+		{83A1ABE9-30B5-40EB-98A0-B9AC77D5B566} = {419CAD08-026A-48F7-A16A-BDAD73CDFBDA}
+		{B3A8B938-4CDF-4129-8F4F-6BCFEE0E5660} = {419CAD08-026A-48F7-A16A-BDAD73CDFBDA}
 	EndGlobalSection
 EndGlobal

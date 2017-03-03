@@ -4,34 +4,37 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EFF4857F-B088-496E-B933-334713A78A63}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{B3A8B938-4CDF-4129-8F4F-6BCFEE0E5660}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EventLogger</RootNamespace>
-    <AssemblyName>EventLogger</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <RootNamespace>ratchet_windows_debugger_net45</RootNamespace>
+    <AssemblyName>ratchet-windows-debugger-net45</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\Debug\samples\</OutputPath>
+    <OutputPath>..\..\bin\Debug\ratchet-windows-debugger\lib\net45\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>..\..\bin\Debug\ratchet-windows-debugger\lib\net45\ratchet-windows-debugger.XML</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\bin\Release\samples\</OutputPath>
+    <OutputPath>..\..\bin\Release\ratchet-windows-debugger\lib\net45\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
+    <DocumentationFile>..\..\bin\Release\ratchet-windows-debugger\lib\net45\ratchet-windows-debugger.XML</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -44,17 +47,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="..\..\ratchet-windows-debugger\Breakpoint.cs">
+      <Link>Breakpoint.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ratchet-windows-debugger\Debugger.cs">
+      <Link>Debugger.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ratchet-windows-debugger\Module.cs">
+      <Link>Module.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ratchet-windows-debugger\PEBase.cs">
+      <Link>PEBase.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ratchet-windows-debugger\Section.cs">
+      <Link>Section.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ratchet-windows-debugger\Symbol.cs">
+      <Link>Symbol.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ratchet-windows-debugger\Thread.cs">
+      <Link>Thread.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\ratchet-windows-debugger\ratchet-windows-debugger.csproj">
-      <Project>{de25da5d-5929-4341-99a9-7c4404674056}</Project>
-      <Name>ratchet-windows-debugger</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

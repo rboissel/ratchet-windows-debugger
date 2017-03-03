@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de 
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("ratchet-windows-debugger")]
+[assembly: AssemblyTitle("ratchet-windows-debugger-net45")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ratchet-windows-debugger")]
-[assembly: AssemblyCopyright("Copyright rboissel ©  2017")]
+[assembly: AssemblyProduct("ratchet-windows-debugger-net45")]
+[assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Le GUID suivant est pour l'ID de la typelib si ce projet est exposé à COM
-[assembly: Guid("de25da5d-5929-4341-99a9-7c4404674056")]
+[assembly: Guid("b3a8b938-4cdf-4129-8f4f-6bcfee0e5660")]
 
 // Les informations de version pour un assembly se composent des quatre valeurs suivantes :
 //

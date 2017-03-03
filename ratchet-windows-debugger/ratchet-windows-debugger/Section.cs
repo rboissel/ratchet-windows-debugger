@@ -41,7 +41,7 @@ namespace Ratchet.Runtime.Debugger
                 internal ulong _Size = 0;
                 public ulong Size { get { return _Size; } }
                 internal List<Symbol> _Symbols = new List<Symbol>();
-                public IReadOnlyCollection<Symbol> Symbols { get { return _Symbols.AsReadOnly(); } }
+                public System.Collections.ObjectModel.ReadOnlyCollection<Symbol> Symbols { get { return _Symbols.AsReadOnly(); } }
 
                 internal Session _Parent = null;
 

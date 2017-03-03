@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de 
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("Ftrace")]
+[assembly: AssemblyTitle("FTrace")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Ftrace")]
+[assembly: AssemblyProduct("FTrace")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Le GUID suivant est pour l'ID de la typelib si ce projet est exposé à COM
-[assembly: Guid("3ea871b8-a2e2-44b2-829c-74911fa74bde")]
+[assembly: Guid("ddd9b0bf-fa50-428c-b258-e9b9a735c2a0")]
 
 // Les informations de version pour un assembly se composent des quatre valeurs suivantes :
 //

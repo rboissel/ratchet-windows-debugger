@@ -45,7 +45,7 @@ namespace Ratchet.Runtime.Debugger
             static extern uint GetFileSize(void* hFile, out uint lpFileSizeHigh);
 
             internal List<Section> _Sections = new List<Section>();
-            public IReadOnlyCollection<Section> Sections { get { return _Sections.AsReadOnly(); } }
+            public System.Collections.ObjectModel.ReadOnlyCollection<Section> Sections { get { return _Sections.AsReadOnly(); } }
 
             IntPtr _Handle = new IntPtr(0);
             public IntPtr Handle { get { return _Handle; } }

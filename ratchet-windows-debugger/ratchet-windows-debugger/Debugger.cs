@@ -803,12 +803,12 @@ namespace Ratchet.Runtime.Debugger
             /// <summary>
             /// A read only collection of all the current modules.
             /// </summary>
-            public IReadOnlyCollection<Module> Modules { get { lock (this) { return new List<Module>(_Modules.Values).AsReadOnly(); } } }
+            public System.Collections.ObjectModel.ReadOnlyCollection<Module> Modules { get { lock (this) { return new List<Module>(_Modules.Values).AsReadOnly(); } } }
             Dictionary<ulong, Thread> _Threads = new Dictionary<ulong, Thread>();
             /// <summary>
             /// A read only collection of all the current threads.
             /// </summary>
-            public IReadOnlyCollection<Thread> Threads { get { lock (this) { return new List<Thread>(_Threads.Values).AsReadOnly(); } } }
+            public System.Collections.ObjectModel.ReadOnlyCollection<Thread> Threads { get { lock (this) { return new List<Thread>(_Threads.Values).AsReadOnly(); } } }
 
             internal static Session CreateSession(System.Diagnostics.Process Process)
             {

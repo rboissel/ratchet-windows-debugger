@@ -1,0 +1,18 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd">
+  <metadata>
+    <id>Ratchet.Runtime.Debugger.Windows</id>
+    <version>1.0.0.0</version>
+    <authors>rboissel</authors>
+    <owners>rboissel</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/rboissel/ratchet-windows-debugger</projectUrl>
+    <iconUrl>https://github.com/rboissel/ratchet-windows-debugger/icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <releaseNotes></releaseNotes>
+    <description>Ratchet Windows Debugger is a library part of the ratchet project that allows the use of the native windows debugger API within a .NET application</description>
+    <copyright>Copyright ©2017 Raphael Boissel</copyright>
+    <language>en-US</language>
+    <tags>ratchet windows win32 debugger native api</tags>
+  </metadata>
+</package>

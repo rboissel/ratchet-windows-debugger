@@ -53,7 +53,7 @@ namespace Ftrace
                     symbol.ReadMemory(new IntPtr(0), opcode, 8);
                     int opcodeSize = 0;
                     long bpaddress = 0;
-                    bool isJumpPatch = false; 
+                    bool isJumpPatch = false;
 
                     // This is a very basic chunk of code to detect common first instructions in system libraries
                     // They are hardcodded. In a true tracert you will write an ASM decodder
@@ -75,6 +75,7 @@ namespace Ftrace
                                 Ratchet.Runtime.Debugger.Windows.Breakpoint breakpoint1 = symbol.AddBreakpoint(new IntPtr(0));
                                 breakpoint1.OnHit += (object s, Ratchet.Runtime.Debugger.Windows.Session.BreakpointEventArgs bp) =>
                                 {
+
                                     Console.WriteLine(symbol.Name + " at " + symbol.BaseAddress.ToInt64().ToString("X"));
 
                                     section.FlushInstructionCache();
@@ -98,6 +99,7 @@ namespace Ftrace
                                 {
                                     breakpoint1.Enabled = false;
                                     breakpoint2.Enabled = true;
+
                                     Console.WriteLine(symbol.Name + " at " + symbol.BaseAddress.ToInt64().ToString("X"));
 
                                     section.FlushInstructionCache();
