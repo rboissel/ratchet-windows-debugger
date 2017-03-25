@@ -76,6 +76,95 @@ namespace Ratchet.Runtime.Debugger
                 ulong a;
                 ulong b;
             }
+
+            public abstract class IntRegisters
+            {
+                public abstract ulong this[uint Index]
+                {
+                    get; set;
+                }
+            }
+
+            internal class IntRegisters_x86_64 : IntRegisters
+            {
+                IntPtr _Handle;
+                internal IntRegisters_x86_64(IntPtr Handle)
+                {
+                    _Handle = Handle;
+                }
+
+                public override ulong this[uint Index]
+                {
+
+                    get
+                    {
+                        NTCONTEXT_x86_64* pContext = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        pContext->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
+                        GetThreadContext(_Handle.ToPointer(), pContext);
+                        ulong result = 0;
+                        switch (Index)
+                        {
+                            case 0: result = pContext->Rax; break;
+                            case 1: result = pContext->Rcx; break;
+                            case 2: result = pContext->Rdx; break;
+                            case 3: result = pContext->Rbx; break;
+                            case 4: result = pContext->Rsp; break;
+                            case 5: result = pContext->Rbp; break;
+                            case 6: result = pContext->Rsi; break;
+                            case 7: result = pContext->Rdi; break;
+                            case 8: result = pContext->R8; break;
+                            case 9: result = pContext->R9; break;
+                            case 10: result = pContext->R10; break;
+                            case 11: result = pContext->R11; break;
+                            case 12: result = pContext->R12; break;
+                            case 13: result = pContext->R13; break;
+                            case 14: result = pContext->R14; break;
+                            case 15: result = pContext->R15; break;
+                            default:
+                                System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(pContext));
+                                throw new Exception("Invalid register index");
+
+
+                        }
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(pContext));
+                        return result;
+                    }
+
+                    set
+                    {
+                        NTCONTEXT_x86_64* pContext = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        pContext->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
+                        GetThreadContext(_Handle.ToPointer(), pContext);
+
+                        switch (Index)
+                        {
+                            case 0: pContext->Rax = value; break;
+                            case 1: pContext->Rcx = value; break;
+                            case 2: pContext->Rdx = value; break;
+                            case 3: pContext->Rbx = value; break;
+                            case 4: pContext->Rsp = value; break;
+                            case 5: pContext->Rbp = value; break;
+                            case 6: pContext->Rsi = value; break;
+                            case 7: pContext->Rdi = value; break;
+                            case 8: pContext->R8 = value; break;
+                            case 9: pContext->R9 = value; break;
+                            case 10: pContext->R10 = value; break;
+                            case 11: pContext->R11 = value; break;
+                            case 12: pContext->R12 = value; break;
+                            case 13: pContext->R13 = value; break;
+                            case 14: pContext->R14 = value; break;
+                            case 15: pContext->R15 = value; break;
+                            default:
+                                System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(pContext));
+                                throw new Exception("Invalid register index");
+                        }
+
+                        SetThreadContext(_Handle.ToPointer(), pContext);
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(pContext));
+                    }
+                }
+            }
+
             [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, Pack = 16 )]
             struct NTCONTEXT_x86_64
             {
@@ -200,7 +289,16 @@ namespace Ratchet.Runtime.Debugger
                     SetThreadContext(_Handle.ToPointer(), context);
                     System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(context));
                 }
-            }            
+            }
+
+
+            public int ReadStack(byte[] Stack, int Size)
+            {
+                ulong pointer = _IntRegisters[4];
+                return _Session.ReadMemory(new IntPtr((long)(pointer - (ulong)Size)), Stack, Size);
+            }
+
+            Session _Session;
 
             uint _Id = 0;
             public uint ID { get { return _Id; } }
@@ -208,10 +306,25 @@ namespace Ratchet.Runtime.Debugger
             IntPtr _Handle;
             public IntPtr Handle { get { return _Handle; } }
 
+            [System.Runtime.InteropServices.DllImport("Kernel32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+            static extern uint ResumeThread(IntPtr hThread);
+            public void Resume()
+            {
+                ResumeThread(_Handle);
+            }
+
+
+            IntRegisters _IntRegisters;
+            public IntRegisters IntegerRegisters
+            {
+                get { return _IntRegisters; }
+            }
 
             internal Thread(Session Session, IntPtr Handle)
             {
+                _Session = Session;
                 _Handle = Handle;
+                _IntRegisters = new IntRegisters_x86_64(Handle);
                 _Id = GetThreadId(_Handle.ToPointer());
                 uint access = 0;
             }

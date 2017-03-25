@@ -349,6 +349,7 @@ namespace Ratchet.Runtime.Debugger
             {
                 internal Session _Parent;
                 internal int _PID;
+
                 internal Thread _Thread;
                 internal bool _FakeEvent = false;
 
@@ -494,6 +495,15 @@ namespace Ratchet.Runtime.Debugger
                     }
                 }
 
+                lock (this)
+                {
+                    if (_ResumeMainThreadAtStartup && ntevent.dwThreadId == _TID)
+                    {
+                        thread.Resume();
+                        _ResumeMainThreadAtStartup = false;
+                    }
+                }
+
                 while (OnCreateProcess == null) { System.Threading.Thread.Sleep(0); }
 
                 OnCreateProcess(this, new CreateProcessEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId)));
@@ -513,6 +523,15 @@ namespace Ratchet.Runtime.Debugger
                 }
                 CreateThreadEventArgs args = new CreateThreadEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId));
 
+                lock (this)
+                {
+                    if (_ResumeMainThreadAtStartup && ntevent.dwThreadId == _TID)
+                    {
+                        thread.Resume();
+                        _ResumeMainThreadAtStartup = false;
+                    }
+                }
+
                 if (OnCreateThread != null)
                 {
                     OnCreateThread(this, args);
@@ -521,6 +540,8 @@ namespace Ratchet.Runtime.Debugger
                 {
                     args.Continue();
                 }
+
+
             }
 
             internal void _CreateExceptionDebugEvent(NTDebugEvent ntevent)
@@ -735,6 +756,9 @@ namespace Ratchet.Runtime.Debugger
             }
 
             internal int _PID = 0;
+            internal int _TID = 0;
+            internal bool _ResumeMainThreadAtStartup = false;
+
             internal void* _hProcess = null;
 
             public IntPtr ProcessHandle { get { return new IntPtr(_hProcess); } }
@@ -751,7 +775,6 @@ namespace Ratchet.Runtime.Debugger
                 _Thread.Start();
             }
 
-            System.Diagnostics.Process _Process;
             System.Threading.Thread _Thread;
 
             public delegate void CreateProcessEventHandler(object sender, CreateProcessEventArgs e);
@@ -810,11 +833,12 @@ namespace Ratchet.Runtime.Debugger
             /// </summary>
             public System.Collections.ObjectModel.ReadOnlyCollection<Thread> Threads { get { lock (this) { return new List<Thread>(_Threads.Values).AsReadOnly(); } } }
 
-            internal static Session CreateSession(System.Diagnostics.Process Process)
+            internal static Session CreateSession(int PID, int TID, bool ResumeThread)
             {
                 Session session = new Session();
-                session._PID = Process.Id;
-                session._Process = Process;
+                session._PID = PID;
+                session._TID = TID;
+                session._ResumeMainThreadAtStartup = ResumeThread;
                 session._StartEventLoop();
                 return session;
             }
@@ -822,12 +846,81 @@ namespace Ratchet.Runtime.Debugger
 
         /// <summary>
         /// Attach a new debugger and return a new debug session for an already started process.
+        /// The process must already be running.
         /// </summary>
         /// <param name="Process"></param>
         /// <returns></returns>
         public static Session CreateSession(System.Diagnostics.Process Process)
         {
-            return Session.CreateSession(Process);
+            return Session.CreateSession(Process.Id, 0, false);
+        }
+
+        internal struct NTExitThreadDebugInfo
+        {
+            internal Int32 dwExitCode;
+        }
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        internal struct NTStartupInfo
+        {
+            public int cb;
+            public IntPtr lpReserved;
+            public IntPtr lpDesktop;
+            public IntPtr lpTitle;
+            public int dwX;
+            public int dwY;
+            public int dwXSize;
+            public int dwYSize;
+            public int dwXCountChars;
+            public int dwYCountChars;
+            public int dwFillAttribute;
+            public int dwFlags;
+            public short wShowWindow;
+            public short cbReserved2;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdError;
+        }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        internal struct NTSecurityAttributes
+        {
+            public int nLength;
+            public unsafe byte* lpSecurityDescriptor;
+            public int bInheritHandle;
+        }
+
+        internal struct NTProcessInformation
+        {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public int dwProcessId;
+            public int dwThreadId;
+        }
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        static unsafe internal extern bool CreateProcess(string lpApplicationName, string lpCommandLine, NTSecurityAttributes* lpProcessAttributes, NTSecurityAttributes* lpThreadAttributes, bool bInheritHandles, uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, NTStartupInfo* lpStartupInfo, NTProcessInformation* lpProcessInformation);
+
+        /// <summary>
+        /// Attach a new debugger and return a new debug session for an already started process.
+        /// </summary>
+        /// <param name="Process"></param>
+        /// <returns></returns>
+        public unsafe static Session CreateSession(System.Diagnostics.ProcessStartInfo ProcessStartInfo, out System.Diagnostics.Process Process)
+        {
+            const int CREATE_SUSPENDED = 0x4;
+
+            NTProcessInformation processInfo = new NTProcessInformation();
+            NTStartupInfo startupInfo = new NTStartupInfo(); ;
+            startupInfo.cb = sizeof(NTStartupInfo);
+            if (!CreateProcess(ProcessStartInfo.FileName, ProcessStartInfo.Arguments, null, null, false, CREATE_SUSPENDED, new IntPtr(0), ProcessStartInfo.WorkingDirectory, &startupInfo, &processInfo))
+            {
+                throw new Exception("Failed to start process " + ProcessStartInfo.FileName);
+            }
+
+            Process = System.Diagnostics.Process.GetProcessById(processInfo.dwProcessId);
+
+            return Session.CreateSession(processInfo.dwProcessId, processInfo.dwThreadId, true);
         }
     }
 }
