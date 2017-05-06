@@ -165,6 +165,30 @@ namespace Ratchet.Runtime.Debugger
                 }
             }
 
+            public abstract class Context
+            {
+                public abstract Thread Thread { get; }
+                public abstract void Load();
+            }
+
+            class Context_x86_64 : Context
+            {
+                internal NTCONTEXT_x86_64* _Context;
+                internal Thread _Thread;
+                internal Context_x86_64(NTCONTEXT_x86_64* pContext, Thread Thread) { _Context = pContext; _Thread = Thread; }
+                ~Context_x86_64() { System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(_Context)); }
+                public override Thread Thread { get { return _Thread; } }
+                public override void Load() { SetThreadContext(Thread._Handle.ToPointer(), _Context); }
+            }
+
+            public Context SaveContext()
+            {
+                NTCONTEXT_x86_64* context = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
+                GetThreadContext(_Handle.ToPointer(), context);
+                return new Context_x86_64(context, this);
+            }
+
             [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, Pack = 16 )]
             struct NTCONTEXT_x86_64
             {

@@ -78,6 +78,9 @@ namespace Ratchet.Runtime.Debugger
             extern static void* VirtualAllocEx(void* hProcess, void* lpBaseAddress, IntPtr dwSize, int flAllocationType, int flProtect);
 
             [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+            extern static bool VirtualProtectEx(void* hProcess, void* lpBaseAddress, IntPtr dwSize, int flNewProtect, int* flOldProtect);
+
+            [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
             extern static bool ReadProcessMemory(void* hProcess, void* lpBaseAddress, [System.Runtime.InteropServices.Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
 
             [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
@@ -211,6 +214,19 @@ namespace Ratchet.Runtime.Debugger
                 const int MEM_RESERVE = 0x00002000;
 
                 return new IntPtr(VirtualAllocEx(_hProcess, Address.ToPointer(), new IntPtr(Size), MEM_COMMIT | MEM_RESERVE, toNtProtection(Protection)));
+            }
+
+            /// <summary>
+            /// Change the memory protection of a memory chunk in the debuggee process.
+            /// </summary>
+            /// <param name="Address">The address where the memory protection should be changed</param>
+            /// <param name="Size">The size of the memory block</param>
+            /// <param name="Protection">The new protection of the memory block that will be allocated</param>
+            /// <returns>True if the protection has been changed false otherwise</returns>
+            public bool ChangeMemoryProtection(IntPtr Address, int Size, Protection Protection)
+            {
+                int flOldProtect = 0;
+                return VirtualProtectEx(_hProcess, Address.ToPointer(), new IntPtr(Size), toNtProtection(Protection), &flOldProtect);
             }
 
             Dictionary<ulong, Breakpoint> _Breakpoint = new Dictionary<ulong, Breakpoint>();
@@ -376,7 +392,13 @@ namespace Ratchet.Runtime.Debugger
 
             public class CreateProcessEventArgs : DebuggerEventArgs
             {
-                internal CreateProcessEventArgs(Session Parent, int PID, Thread Thread) : base(Parent, PID, Thread) { }
+                Module _Module = null;
+                public Module Module { get { return _Module; } }
+
+                internal CreateProcessEventArgs(Session Parent, int PID, Thread Thread, Module Module) : base(Parent, PID, Thread)
+                {
+                    _Module = Module;
+                }
             }
 
             public class ExitProcessEventArgs : DebuggerEventArgs
@@ -504,9 +526,11 @@ namespace Ratchet.Runtime.Debugger
                     }
                 }
 
+                Module module = new Module(this, new IntPtr(info.hFile), new IntPtr(info.lpBaseOfImage));
+
                 while (OnCreateProcess == null) { System.Threading.Thread.Sleep(0); }
 
-                OnCreateProcess(this, new CreateProcessEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId)));
+                OnCreateProcess(this, new CreateProcessEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId), module));
             }
 
             internal void _CreateThreadDebugEvent(NTDebugEvent ntevent)
