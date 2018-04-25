@@ -259,18 +259,7 @@ namespace Ratchet.Runtime.Debugger
                     EXPORT_TABLE_DATA* exportTableData = (EXPORT_TABLE_DATA*)ptr;
                     IntPtr addressOfFunctions = FindAddressFromRVA(module, exportTableData->AddressOfFunctions);
                     IntPtr addressOfNames = FindAddressFromRVA(module, exportTableData->AddressOfNames);
-
-
-                    if (exportTableData->NumberOfName > exportTableData->NumberOfFunction)
-                    {
-                        exportTableData->NumberOfName = exportTableData->NumberOfFunction;
-                    }
-
-                    if (exportTableData->NumberOfFunction > exportTableData->NumberOfName)
-                    {
-                        addressOfFunctions = new IntPtr(addressOfFunctions.ToInt64() + (exportTableData->NumberOfFunction - exportTableData->NumberOfName) * 4);
-                        exportTableData->NumberOfFunction = exportTableData->NumberOfName;
-                    }
+                    IntPtr addressOfNameOrdinal = FindAddressFromRVA(module, exportTableData->AddressOfNameOrdinal);
 
 
                     byte[] namePointers = new byte[4 * exportTableData->NumberOfName];
@@ -278,14 +267,37 @@ namespace Ratchet.Runtime.Debugger
                     byte[] functionsPointers = new byte[4 * exportTableData->NumberOfFunction];
                     module.ReadMemory(addressOfFunctions, functionsPointers, functionsPointers.Length);
 
+                    int[] nameOrdinal = new int[exportTableData->NumberOfName];
+                    int[] reverseNameOrdinal = new int[exportTableData->NumberOfFunction];
+
+                    {
+                        byte[] nameOrdinalData = new byte[2 * exportTableData->NumberOfName];
+                        module.ReadMemory(addressOfNameOrdinal, nameOrdinalData, nameOrdinalData.Length);
+                        for (int n = 0; n < exportTableData->NumberOfFunction; n++)
+                        {
+                            reverseNameOrdinal[n] = -1;
+                        }
+                        for (int n = 0; n < exportTableData->NumberOfName; n++)
+                        {
+                            nameOrdinal[n] = BitConverter.ToUInt16(nameOrdinalData, n * 2);
+                            if (nameOrdinal[n] >= exportTableData->NumberOfFunction) { throw new Exception("Invalid PE export table"); }
+                            reverseNameOrdinal[nameOrdinal[n]] = n;
+                        }
+                    }
+
 
                     for (int n = 0; n < exportTableData->NumberOfName; n++)
                     {
                         Module.Symbol symbol = new Module.Symbol();
                         Module.Section parent = null;
-                        IntPtr namePointer = FindAddressFromRVA(module, BitConverter.ToUInt32(namePointers, n * 4));
                         IntPtr functionPointer = FindAddressInSectionFromRVA(module, BitConverter.ToUInt32(functionsPointers, n * 4), out parent);
-                        string name = ReadASCIIString(module, namePointer);
+
+                        string name = "";
+                        if (reverseNameOrdinal[n] >= 0)
+                        {
+                            IntPtr namePointer = FindAddressFromRVA(module, BitConverter.ToUInt32(namePointers, (int)(reverseNameOrdinal[n] * 4)));
+                            name = ReadASCIIString(module, namePointer);
+                        }
                         symbol._BaseAddress = new IntPtr(functionPointer.ToInt64() +  parent.BaseAddress.ToInt64());
                         symbol._Name = name;
                         symbol._Parent = module._Parent;
