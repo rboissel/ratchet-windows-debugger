@@ -442,10 +442,14 @@ namespace Ratchet.Runtime.Debugger
                 IntPtr _Address = new IntPtr(0);
                 public IntPtr Address { get { return _Address; } }
 
-                internal ExceptionEventArgs(Session Parent, int PID, Thread Thread, bool FirstChance, IntPtr Address) : base(Parent, PID, Thread)
+                int _ExceptionCode = 0;
+                public int ExceptionCode { get { return _ExceptionCode;} }
+
+                internal ExceptionEventArgs(Session Parent, int PID, Thread Thread, bool FirstChance, IntPtr Address, int ExceptionCode) : base(Parent, PID, Thread)
                 {
                     _FirstChance = FirstChance;
                     _Address = Address;
+                    _ExceptionCode = ExceptionCode;
                 }
 
                 public void ExceptionNotHandled()
@@ -589,7 +593,7 @@ namespace Ratchet.Runtime.Debugger
                     }
                     else
                     {
-                        ExceptionEventArgs excpetion = new ExceptionEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId), info.dwFirstChance != 0, new IntPtr(info.ExceptionRecord.ExceptionAddress));
+                        ExceptionEventArgs excpetion = new ExceptionEventArgs(this, ntevent.dwProcessId, _GetThread((ulong)ntevent.dwThreadId), info.dwFirstChance != 0, new IntPtr(info.ExceptionRecord.ExceptionAddress), info.ExceptionRecord.ExceptionCode);
                         if (OnException != null)
                         {
                             OnException(this, excpetion);

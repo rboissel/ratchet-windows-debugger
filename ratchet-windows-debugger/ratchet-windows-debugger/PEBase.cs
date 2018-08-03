@@ -62,6 +62,7 @@ namespace Ratchet.Runtime.Debugger
                 public uint SizeOfUninitializedData;
                 public uint AddressOfEntryPoint;
                 public uint BaseOfCode;
+                public uint BaseOfData;
                 public uint ImageBase;
                 public uint SectionAlignment;
                 public uint FileAlignment;
@@ -244,7 +245,8 @@ namespace Ratchet.Runtime.Debugger
                     }
                     else
                     {
-                        IMAGE_OPTIONAL_HEADER32* header = (IMAGE_OPTIONAL_HEADER32*)ptr; 
+                        IMAGE_OPTIONAL_HEADER32* header = (IMAGE_OPTIONAL_HEADER32*)ptr;
+                        ParseExportTable(module, FindAddressFromRVA(module, header->exportTable.VirtualAddress), (int)header->exportTable.Size);
                     }
                 }
             }

@@ -85,6 +85,66 @@ namespace Ratchet.Runtime.Debugger
                 }
             }
 
+            internal class IntRegisters_x86 : IntRegisters
+            {
+                IntPtr _Handle;
+                internal IntRegisters_x86(IntPtr Handle)
+                {
+                    _Handle = Handle;
+                }
+
+                public override ulong this[uint Index]
+                {
+
+                    get
+                    {
+                        NTCONTEXT_x86* pContext = (NTCONTEXT_x86*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        pContext->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_i386;
+                        GetThreadContext(_Handle.ToPointer(), pContext);
+                        ulong result = 0;
+                        switch (Index)
+                        {
+                            case 0: result = pContext->Eax; break;
+                            case 1: result = pContext->Ecx; break;
+                            case 2: result = pContext->Edx; break;
+                            case 3: result = pContext->Ebx; break;
+                            case 4: result = pContext->Esp; break;
+                            case 5: result = pContext->Ebp; break;
+                            case 6: result = pContext->Esi; break;
+                            case 7: result = pContext->Edi; break;
+                        }
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(pContext));
+
+                        return result;
+                    }
+
+                    set
+                    {
+                        NTCONTEXT_x86* pContext = (NTCONTEXT_x86*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        pContext->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_i386;
+                        GetThreadContext(_Handle.ToPointer(), pContext);
+
+                        switch (Index)
+                        {
+                            case 0: pContext->Eax = (uint)value; break;
+                            case 1: pContext->Ecx = (uint)value; break;
+                            case 2: pContext->Edx = (uint)value; break;
+                            case 3: pContext->Ebx = (uint)value; break;
+                            case 4: pContext->Esp = (uint)value; break;
+                            case 5: pContext->Ebp = (uint)value; break;
+                            case 6: pContext->Esi = (uint)value; break;
+                            case 7: pContext->Edi = (uint)value; break;
+                            default:
+                                System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(pContext));
+                                throw new Exception("Invalid register index");
+                        }
+
+                        SetThreadContext(_Handle.ToPointer(), pContext);
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(pContext));
+                    }
+                }
+            }
+
             internal class IntRegisters_x86_64 : IntRegisters
             {
                 IntPtr _Handle;
@@ -181,12 +241,92 @@ namespace Ratchet.Runtime.Debugger
                 public override void Load() { SetThreadContext(Thread._Handle.ToPointer(), _Context); }
             }
 
-            public Context SaveContext()
+            class Context_x86 : Context
             {
-                NTCONTEXT_x86_64* context = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
-                context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
-                GetThreadContext(_Handle.ToPointer(), context);
-                return new Context_x86_64(context, this);
+                internal NTCONTEXT_x86* _Context;
+                internal Thread _Thread;
+                internal Context_x86(NTCONTEXT_x86* pContext, Thread Thread) { _Context = pContext; _Thread = Thread; }
+                ~Context_x86() { System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(_Context)); }
+                public override Thread Thread { get { return _Thread; } }
+                public override void Load() { SetThreadContext(Thread._Handle.ToPointer(), _Context); }
+            }
+
+            public unsafe Context SaveContext()
+            {
+                if (sizeof(void*) == 4)
+                {
+                    NTCONTEXT_x86* context = (NTCONTEXT_x86*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                    context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_i386;
+                    GetThreadContext(_Handle.ToPointer(), context);
+                    return new Context_x86(context, this);
+                }
+                else
+                {
+                    NTCONTEXT_x86_64* context = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                    context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
+                    GetThreadContext(_Handle.ToPointer(), context);
+                    return new Context_x86_64(context, this);
+                }
+            }
+
+            [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, Pack = 8)]
+            struct NTCONTEXT_x86
+            {
+                public uint ContextFlags;
+                uint Dr0;
+                uint Dr1;
+                uint Dr2;
+                uint Dr3;
+                uint Dr6;
+                uint Dr7;
+
+                /* FLOATING_SAVE_AREA */
+                uint ControlWord;
+                uint StatusWord;
+                uint TagWord;
+                uint ErrorOffset;
+                uint ErrorSelector;
+                uint DataOffset;
+                uint DataSelector;
+                uint RegisterArea_0;
+                uint RegisterArea_1;
+                uint RegisterArea_2;
+                uint RegisterArea_3;
+                uint RegisterArea_4;
+                uint RegisterArea_5;
+                uint RegisterArea_6;
+                uint RegisterArea_7;
+                uint RegisterArea_8;
+                uint RegisterArea_9;
+                uint RegisterArea_10;
+                uint RegisterArea_11;
+                uint RegisterArea_12;
+                uint RegisterArea_13;
+                uint RegisterArea_14;
+                uint RegisterArea_15;
+                uint RegisterArea_16;
+                uint RegisterArea_17;
+                uint RegisterArea_18;
+                uint RegisterArea_19;
+                uint Cr0NpxState;
+
+                uint SegGs;
+                uint SegFs;
+                uint SegEs;
+                uint SegDs;
+
+                public uint Edi;
+                public uint Esi;
+                public uint Ebx;
+                public uint Edx;
+                public uint Ecx;
+                public uint Eax;
+                public uint Ebp;
+                public uint Eip;
+                uint SegCs;
+                uint EFlags;
+                public uint Esp;
+                uint SegSs;
             }
 
             [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, Pack = 16 )]
@@ -293,25 +433,49 @@ namespace Ratchet.Runtime.Debugger
                 ulong LastExceptionFromRip;
             }
 
-            public IntPtr InstructionPointer
+            public unsafe IntPtr InstructionPointer
             {
                 get
                 {
-                    NTCONTEXT_x86_64* context = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
-                    context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
-                    GetThreadContext(_Handle.ToPointer(), context);
-                    ulong rip = context->Rip;
-                    System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(context));
-                    return new IntPtr((long)rip);
+                    if (sizeof(void*) == 4)
+                    {
+                        NTCONTEXT_x86* context = (NTCONTEXT_x86*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_i386;
+                        GetThreadContext(_Handle.ToPointer(), context);
+                        ulong eip = context->Eip;
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(context));
+                        return new IntPtr((long)eip);
+                    }
+                    else
+                    {
+                        NTCONTEXT_x86_64* context = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
+                        GetThreadContext(_Handle.ToPointer(), context);
+                        ulong rip = context->Rip;
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(context));
+                        return new IntPtr((long)rip);
+                    }
                 }
                 set
                 {
-                    NTCONTEXT_x86_64* context = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
-                    context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
-                    GetThreadContext(_Handle.ToPointer(), context);
-                    context->Rip = (ulong)value.ToInt64();
-                    SetThreadContext(_Handle.ToPointer(), context);
-                    System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(context));
+                    if (sizeof(void*) == 4)
+                    {
+                        NTCONTEXT_x86* context = (NTCONTEXT_x86*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_i386;
+                        GetThreadContext(_Handle.ToPointer(), context);
+                        context->Eip = (uint)value.ToInt64();
+                        SetThreadContext(_Handle.ToPointer(), context);
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(context));
+                    }
+                    else
+                    {
+                        NTCONTEXT_x86_64* context = (NTCONTEXT_x86_64*)System.Runtime.InteropServices.Marshal.AllocHGlobal(4096 * 2).ToPointer();
+                        context->ContextFlags = (uint)CONTEXT_FLAGS.CONTEXT_ALL_AMD64;
+                        GetThreadContext(_Handle.ToPointer(), context);
+                        context->Rip = (ulong)value.ToInt64();
+                        SetThreadContext(_Handle.ToPointer(), context);
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(new IntPtr(context));
+                    }
                 }
             }
 
@@ -348,7 +512,14 @@ namespace Ratchet.Runtime.Debugger
             {
                 _Session = Session;
                 _Handle = Handle;
-                _IntRegisters = new IntRegisters_x86_64(Handle);
+                if (sizeof(void*) == 4)
+                {
+                    _IntRegisters = new IntRegisters_x86(Handle);
+                }
+                else
+                {
+                    _IntRegisters = new IntRegisters_x86_64(Handle);
+                }
                 _Id = GetThreadId(_Handle.ToPointer());
                 uint access = 0;
             }
